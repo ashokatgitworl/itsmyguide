@@ -1,0 +1,4 @@
+from paths import CHROMA_URLL,CHROMA_PORTT,ROOT_DIR
+
+
+print("ROOT_DIR:", ROOT_DIR)
