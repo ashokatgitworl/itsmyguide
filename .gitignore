@@ -1,0 +1,63 @@
+__pycache__/
+*.pyc
+.env
+.venv/
+*.log
+.DS_Store
+.idea/
+.vscode/
+
+# -------------------------
+# Python ignores
+# -------------------------
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pkl
+*.log
+
+# Virtual environment (VERY important)
+venv/
+env/
+.venv/
+
+# Jupyter & temp files
+.ipynb_checkpoints/
+*.sqlite
+*.sqlite3
+
+# -------------------------
+# ChromaDB / Vector Stores
+# -------------------------
+chromadb/
+db/
+vectorstore/
+*.npy
+*.bin
+
+# -------------------------
+# Streamlit
+# -------------------------
+.streamlit/
+
+# -------------------------
+# OS and IDE specific
+# -------------------------
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# -------------------------
+# Git LFS pointer safety
+# -------------------------
+*.h5
+*.pt
+*.pth
+
+# -------------------------
+# Misc
+# -------------------------
+*.cache/
+logs/
