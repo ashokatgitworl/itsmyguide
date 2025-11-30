@@ -9,8 +9,8 @@ ENV_FPATH = ROOT_DIR / ".env"
 
 CODE_DIR = ROOT_DIR / "code"
 
-APP_CONFIG_FPATH = APP_ROOT / "ITSMYGUIDE" / "config" / "config.yaml"
-PROMPT_CONFIG_FPATH = APP_ROOT / "ITSMYGUIDE" / "config" / "prompt_config.yaml"
+APP_CONFIG_FPATH = APP_ROOT / "config" / "config.yaml"
+PROMPT_CONFIG_FPATH = APP_ROOT / "config" / "prompt_config.yaml"
 OUTPUTS_DIR = ROOT_DIR / "ITSMYGUIDE" / "outputs"
 
 DATA_DIR = ROOT_DIR / "ITSMYGUIDE" / "Source"
