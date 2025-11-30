@@ -12,3 +12,4 @@ streamlit
 sentence-transformers
 fastapi
 uvicorn
+chromadb
