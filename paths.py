@@ -24,5 +24,6 @@ CHROMA_URLL = "chromadb-cloud-production.up.railway.app"
 CHROMA_PORTT = "443"
 
 # Weaviate Cloud details
-WEAVIATE_URLL = "https://weaviatedbcloud-production.up.railway.app"
-WEAVIATE_PORTT="443"
+WEAVIATE_URL = "http://8dzf8gehrqw15odh1q3ifa.c0.asia-southeast1.gcp.weaviate.cloud"
+WEAVIATE_API_KEY="cUt4MXlab2hqNGllejFhTl81R2NjaVo0Y3d2eEhjczU3dmI5M0hESnRseE40VjI1Tk1FNUpUNGwrNXNnPV92MjAw"
+CLASS_NAME = "Publication"

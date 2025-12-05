@@ -1,6 +1,6 @@
 import os
 from typing import List
-
+from paths import WEAVIATE_URL, WEAVIATE_API_KEY,CLASS_NAME
 # embeddings & splitting
 import torch
 from sentence_transformers import SentenceTransformer
@@ -18,14 +18,10 @@ from utils import load_all_publications
 # ------------------------------------------
 # CONFIG - set these in Railway variables
 # ------------------------------------------
-# Example Railway environment variables:
-# WEAVIATE_URL = "https://<your-instance>.weaviate.network"   # WCD URL
-# WEAVIATE_API_KEY = "<your-weaviate-api-key>"
-# CLASS_NAME = "Publication"   # class/schema name in Weaviate
 
-WEAVIATE_URL = "https://8dzf8gehrqw15odh1q3ifa.c0.asia-southeast1.gcp.weaviate.cloud" #os.getenv("WEAVIATE_URL")
-WEAVIATE_API_KEY = "cUt4MXlab2hqNGllejFhTl81R2NjaVo0Y3d2eEhjczU3dmI5M0hESnRseE40VjI1Tk1FNUpUNGwrNXNnPV92MjAw" # os.getenv("WEAVIATE_API_KEY") # 
-CLASS_NAME = os.getenv("CLASS_NAME", "Publication")
+WEAVIATE_URL = WEAVIATE_URL 
+WEAVIATE_API_KEY =WEAVIATE_API_KEY 
+CLASS_NAME = CLASS_NAME 
 
 
 def get_client():
@@ -58,18 +54,6 @@ def initialize_schema():
             )
         ]
     )
-    # if not client.schema.exists("Publication"):
-    #     client.schema.create_class(
-    #         name="Publication",
-    #         properties=[
-    #             Property(name="text", data_type=DataType.TEXT),
-    #             Property(name="embedding", data_type=DataType.NUMBER_ARRAY)
-    #         ],
-    #         vectorizer_config=Configure.Vectorizer.none(),
-    #         description="Stores publication chunks with manual embeddings"
-    #     )
-    #     print("Created schema: Publication")
-
     client.close()
 
 
