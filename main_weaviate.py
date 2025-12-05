@@ -73,18 +73,6 @@ def retrieve_relevant_documents(
 
 
     logging.info("Filtering results...")
-    # keep_item = [False] * len(results["ids"][0])
-    # for i, distance in enumerate(results["distances"][0]):
-    #     if distance < threshold:
-    #         keep_item[i] = True
-
-    # for i, keep in enumerate(keep_item):
-    #     if keep:
-    #         relevant_results["ids"].append(results["ids"][0][i])
-    #         relevant_results["documents"].append(results["documents"][0][i])
-    #         relevant_results["distances"].append(results["distances"][0][i])
-
-    # return relevant_results["documents"]
     relevant_documents = []
 
     for obj in results.objects:
@@ -243,8 +231,7 @@ if __name__ == "__main__":
         st.markdown("This AI chatbot is powered by:")
         st.markdown("- **Groq** for fast LLM inference")
         st.markdown("- **LangChain** for AI orchestration")
-        st.markdown("- **Railway** for vector databse hosting")
-        st.markdown("- **ChromaDB** for vector database management")
+        st.markdown("- **Weaviate** for vector databsese store & hosting")
         st.markdown("- **Streamlit** for the beautiful UI")
 
         st.markdown("---")
