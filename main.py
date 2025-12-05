@@ -230,6 +230,7 @@ if __name__ == "__main__":
         st.markdown("This AI chatbot is powered by:")
         st.markdown("- **Groq** for fast LLM inference")
         st.markdown("- **LangChain** for AI orchestration")
+        st.markdown("- **LangSmith** for Monitoring & Evaluation")
         st.markdown("- **Railway** for vector databse hosting")
         st.markdown("- **ChromaDB** for vector database management")
         st.markdown("- **Streamlit** for the beautiful UI")
