@@ -5,7 +5,7 @@ from utils import load_yaml_config
 from prompt_builder import build_prompt_from_config
 from langchain_groq import ChatGroq
 from paths import APP_CONFIG_FPATH, PROMPT_CONFIG_FPATH, OUTPUTS_DIR
-from ServerInteraction import get_db_collection, embed_documents
+from weaviateInteraction import get_db_collection, embed_documents
 import streamlit as st
 logger = logging.getLogger()
 
@@ -32,14 +32,15 @@ load_dotenv()
 # To avoid tokenizer parallelism warning from huggingface
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
-collection = get_db_collection(collection_name="publications")
+collection = get_db_collection(collection_name="publication")
 
 
 def retrieve_relevant_documents(
     query: str,
     n_results: int = 5,
     threshold: float = 0.3,
-) -> list[str]:
+    ) -> str:
+# ) -> list[str]:
     """
     Query the ChromaDB database with a string query.
 
@@ -64,25 +65,37 @@ def retrieve_relevant_documents(
 
     logging.info("Querying collection...")
     # Query the collection
-    results = collection.query(
-        query_embeddings=[query_embedding],
-        n_results=n_results,
-        include=["documents", "distances"],
+    results = collection.query.near_vector(
+        near_vector=query_embedding,
+        limit=n_results,
+        return_metadata=["distance"]
     )
 
+
     logging.info("Filtering results...")
-    keep_item = [False] * len(results["ids"][0])
-    for i, distance in enumerate(results["distances"][0]):
+    # keep_item = [False] * len(results["ids"][0])
+    # for i, distance in enumerate(results["distances"][0]):
+    #     if distance < threshold:
+    #         keep_item[i] = True
+
+    # for i, keep in enumerate(keep_item):
+    #     if keep:
+    #         relevant_results["ids"].append(results["ids"][0][i])
+    #         relevant_results["documents"].append(results["documents"][0][i])
+    #         relevant_results["distances"].append(results["distances"][0][i])
+
+    # return relevant_results["documents"]
+    relevant_documents = []
+
+    for obj in results.objects:
+        distance = obj.metadata.distance
+
         if distance < threshold:
-            keep_item[i] = True
+            doc = obj.properties.get("document", "")
+            relevant_documents.append(doc)
 
-    for i, keep in enumerate(keep_item):
-        if keep:
-            relevant_results["ids"].append(results["ids"][0][i])
-            relevant_results["documents"].append(results["documents"][0][i])
-            relevant_results["distances"].append(results["distances"][0][i])
+    return relevant_documents
 
-    return relevant_results["documents"]
 
 
 def respond_to_query(
@@ -175,7 +188,7 @@ if __name__ == "__main__":
     
       # Page configuration
     st.set_page_config(
-        page_title="ASK ME AI Chatbot Assistant",
+        page_title="MyGuide AI Chatbot Assistant",
         page_icon="🤖",
         layout="wide",
         initial_sidebar_state="expanded"

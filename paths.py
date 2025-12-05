@@ -22,3 +22,7 @@ CHAT_HISTORY_DB_FPATH = OUTPUTS_DIR / "chat_history.db"
 # Chroma Cloud details
 CHROMA_URLL = "chromadb-cloud-production.up.railway.app"
 CHROMA_PORTT = "443"
+
+# Weaviate Cloud details
+WEAVIATE_URLL = "https://weaviatedbcloud-production.up.railway.app"
+WEAVIATE_PORTT="443"

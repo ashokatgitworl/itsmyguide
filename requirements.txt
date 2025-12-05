@@ -13,3 +13,8 @@ sentence-transformers
 fastapi
 uvicorn
 chromadb
+weaviate
+weaviate-client
+
+
+
