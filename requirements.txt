@@ -18,4 +18,3 @@ weaviate-client
 langchain_classic
 openai
 anthropic
-Lanchain_anthropic
