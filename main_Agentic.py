@@ -191,9 +191,9 @@ Use these tools when appropriate to help answer questions. if you don not find a
    # Sidebar for additional features
     with st.sidebar:
         st.markdown("### About This App")
-        st.markdown("This AI chatbot is powered by:")
+        st.markdown("Agentic AI chatbot:")
         st.markdown("- **Groq** for fast LLM inference")
-        st.markdown("- **LangChain** for AI orchestration")
+        st.markdown("- **LangGraph** for AI orchestration")
         st.markdown("- **LangSmith** for Monitoring & Evaluation")
         st.markdown("- **Railway** for vector databse hosting")
         st.markdown("- **ChromaDB** for vector database management")
