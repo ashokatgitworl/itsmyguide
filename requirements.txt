@@ -15,6 +15,10 @@ uvicorn
 chromadb
 weaviate
 weaviate-client
+langchain_classic
+langcgraph
+langchain_openai
+langchain_anthropic
 
 
 

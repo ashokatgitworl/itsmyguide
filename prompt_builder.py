@@ -57,7 +57,7 @@ def build_prompt_from_config(
     if role := config.get("role"):
         prompt_parts.append(f"You are {lowercase_first_char(role.strip())}.")
 
-    instruction = config.get("instruction")
+    instruction =  "Given the some documents that should be relevant to the user's question, answer the user's question."#config.get("instruction")
     if not instruction:
         raise ValueError("Missing required field: 'instruction'")
     prompt_parts.append(format_prompt_section("Your task is as follows:", instruction))

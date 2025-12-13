@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from utils import load_yaml_config
 from prompt_builder import build_prompt_from_config
 from langchain_groq import ChatGroq
+from langchain_anthropic import ChatAnthropic
 from paths import APP_CONFIG_FPATH, PROMPT_CONFIG_FPATH, OUTPUTS_DIR
 from ServerInteraction import get_db_collection, embed_documents
 import streamlit as st
@@ -125,6 +126,7 @@ def respond_to_query(
     logging.info("")
 
     llm = ChatGroq(model=llm)
+    # llm =ChatAnthropic(model=llm)
 
     response = llm.invoke(rag_assistant_prompt)
     return response.content

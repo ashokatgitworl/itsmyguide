@@ -59,7 +59,7 @@ rag_assistant_prompt:
     You are given related conntents to the topic and question will be asked to you.you will provide the answer briefly in approx 5 lines..
   style_or_tone:
     - Use clear, concise language with bullet points where appropriate.
-  instruction: |
+  instruction:
     Given the some documents that should be relevant to the user's question, answer the user's question.
 
   output_constraints:
