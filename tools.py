@@ -20,18 +20,46 @@ from langchain_core.messages import ToolMessage,BaseMessage
 from langchain_core.tools import InjectedToolCallId, tool
 from langgraph.prebuilt import InjectedState
 from langgraph.types import Command
-# from langchain.agents import AgentState
-from langgraph.prebuilt import create_react_agent
 from prompt_builder import build_prompt_from_config
 from paths import APP_CONFIG_FPATH, PROMPT_CONFIG_FPATH, OUTPUTS_DIR
 from utils import load_yaml_config
+
+
+CHROMA_URL = CHROMA_URLL 
+CHROMA_PORT = CHROMA_PORTT 
+
+# MCP Imports
+# import asyncio
+# from mcp import ClientSession, StdioServerParameters
+# from mcp.client.stdio import stdio_client
+
+# MCP server config (same as your JSON)
+# async def call_git_mcp(tool_name: str, arguments: dict):
+#     server_params = StdioServerParameters(
+#         command="uvx",
+#         args=["mcp-server-git"]
+#     )
+
+#     async with stdio_client(server_params) as (read, write):
+#         async with ClientSession(read, write) as session:
+#             await session.initialize()
+
+#             result = await session.call_tool(
+#                 tool_name,
+#                 arguments
+#             )
+#             return result
+
+# @tool            
+# def git_tool(tool_name: str, arguments: dict):
+#     return asyncio.run(call_git_mcp(tool_name, arguments))
+
+    
 
 class AgentState(TypedDict):
     messages: List[BaseMessage]
 
 
-CHROMA_URL = CHROMA_URLL 
-CHROMA_PORT = CHROMA_PORTT 
 
 
 
@@ -202,34 +230,27 @@ class CalcState(AgentState):
 
 
 
-prompt_config = load_yaml_config(PROMPT_CONFIG_FPATH)
-rag_assistant_prompt = prompt_config["rag_assistant_prompt"]
-
+# prompt_config = load_yaml_config(PROMPT_CONFIG_FPATH)
+# rag_assistant_prompt = prompt_config["rag_assistant_prompt"]
 # @tool
-# def respond_to_query(
-#     prompt_config: dict,
-#     query: str,
-#     # llm: str,
-#     n_results: int = 5,
-#     threshold: float = 0.5,
-# ) -> str:
-#     """
-#     Respond to a query using the ChromaDB database.
-#     """
-#     relevant_documents = retrieve_relevant_documents(
-#         query, n_results=n_results, threshold=threshold
-#     )
-#     input_data = (
-#         f"Relevant documents:\n\n{relevant_documents}\n\nUser's question:\n\n{query}"
-#     )
-#     rag_assistant_prompt = build_prompt_from_config(
-#         prompt_config, input_data=input_data
-#     )
-#     llm =ChatAnthropic(model='claude-sonnet-4-20250514')
+# async def call_git_tool(tool_name: str, arguments: dict):
+#     async with stdio_client(server_params) as (read, write):
+#         async with ClientSession(read, write) as session:
 
-#     response = llm.invoke(rag_assistant_prompt)
-#     return response.content
+#             # Initialize MCP session
+#             await session.initialize()
 
+#             # List available tools (optional but useful)
+#             tools = await session.list_tools()
+#             print("Available tools:", tools)
+
+#             # Call a specific tool
+#             result = await session.call_tool(
+#                 name=tool_name,
+#                 arguments=arguments
+#             )
+
+#             return result
 
 def get_all_tools() -> List:
     """Return a list of all available tools."""

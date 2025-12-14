@@ -1,4 +1,4 @@
-import os
+import os, json, uuid
 # import logging
 from langchain_groq import ChatGroq
 from paths import APP_CONFIG_FPATH, PROMPT_CONFIG_FPATH, OUTPUTS_DIR
@@ -10,7 +10,7 @@ from langchain_classic.schema import HumanMessage, SystemMessage
 from langgraph.graph import StateGraph, END
 from langgraph.graph.message import add_messages
 from tools import get_all_tools
-from langchain_core.messages import ToolMessage
+from langchain_core.messages import ToolMessage,HumanMessage
 from langchain_core.tools import InjectedToolCallId, tool
 from langgraph.prebuilt import InjectedState
 from langgraph.types import Command
@@ -119,7 +119,6 @@ def create_graph():
 
 
 
-
 if __name__ == "__main__":
     
     # Create the graph
@@ -142,77 +141,208 @@ Use these tools when appropriate to help answer questions. if you don not find a
 
     # Initialize conversation state
     initial_state = {"messages": [SystemMessage(content=system_content)]}
-    
-      # Page configuration
-    st.set_page_config(
-        page_title="ASK ME AI Chatbot Assistant",
-        page_icon="🤖",
-        layout="wide",
-        initial_sidebar_state="expanded"
+
+# =================================================
+# PAGE CONFIG
+# =================================================
+st.set_page_config(
+    page_title="MY Guide – AI Assistant",
+    page_icon="🤖",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# =================================================
+# HEADER
+# =================================================
+st.markdown(
+    """
+    <h2 style="margin-bottom:0;">🤖 MY Guide AI Assistant</h2>
+    <p style="color:gray; margin-top:4px;">
+    Data Governance • Cyber Security • Cloud • Generative AI
+    </p>
+    """,
+    unsafe_allow_html=True
+)
+
+st.divider()
+
+# =================================================
+# FILE STORAGE
+# =================================================
+CHAT_DIR = "chat_data"
+os.makedirs(CHAT_DIR, exist_ok=True)
+
+USERNAME = "default_user"
+
+def user_file():
+    return f"{CHAT_DIR}/{USERNAME}.json"
+
+def load_user_data():
+    if os.path.exists(user_file()):
+        with open(user_file()) as f:
+            return json.load(f)
+    return {"chats": {}, "active_chat": None}
+
+def save_user_data(data):
+    # Auto-delete empty chats
+    empty = [cid for cid, c in data["chats"].items() if not c["messages"]]
+    for cid in empty:
+        del data["chats"][cid]
+        if data["active_chat"] == cid:
+            data["active_chat"] = None
+
+    with open(user_file(), "w") as f:
+        json.dump(data, f, indent=2)
+
+# =================================================
+# SESSION STATE
+# =================================================
+if "user_data" not in st.session_state:
+    st.session_state.user_data = load_user_data()
+
+data = st.session_state.user_data
+
+# =================================================
+# SIDEBAR – PROFESSIONAL NAV
+# =================================================
+with st.sidebar:
+    st.markdown("### 💬 Conversations")
+
+    if st.button("➕  New conversation", use_container_width=True):
+        data["active_chat"] = None
+        save_user_data(data)
+        st.rerun()
+
+    st.divider()
+
+    chats_sorted = sorted(
+        data["chats"].items(),
+        key=lambda x: (not x[1].get("pinned", False))
     )
 
-    # Main title and description
-    st.title("🤖 MY Guide AI Chatbot Assistant")
-    st.markdown("Ask me about the Data goverance, Cyber Security,CLoud computing , Genrative AI  and I'll help you with intelligent responses!")
-  
-    
- # Initialize chat history in session state
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
+    for cid, c in chats_sorted:
+        col1, col2 = st.columns([7, 1])
 
-    # Display chat messages from history on app rerun
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+        with col1:
+            if st.button(
+                f"{'📌 ' if c.get('pinned') else ''}{c['title']}",
+                key=f"chat_{cid}",
+                use_container_width=True
+            ):
+                data["active_chat"] = cid
+                save_user_data(data)
+                st.rerun()
 
-     # Accept user input
-    if prompt := st.chat_input("What would you like to know?"):
-        st.session_state.messages.append({"role": "user", "content": prompt})
+        with col2:
+            with st.popover("⋮"):
+                if st.button(
+                    "📌 Unpin" if c.get("pinned") else "📌 Pin",
+                    key=f"pin_{cid}",
+                    use_container_width=True
+                ):
+                    c["pinned"] = not c.get("pinned", False)
+                    save_user_data(data)
+                    st.rerun()
 
-        with st.chat_message("user"):
-            st.markdown(prompt)
+                if st.button(
+                    "🗑️ Delete",
+                    key=f"del_{cid}",
+                    use_container_width=True
+                ):
+                    del data["chats"][cid]
+                    if data["active_chat"] == cid:
+                        data["active_chat"] = None
+                    save_user_data(data)
+                    st.rerun()
 
-        with st.chat_message("assistant"):
-            with st.spinner("Thinking..."):
-                # response = get_ai_responseSLIT(prompt, llm)
-           # Add user message to state
-                initial_state["messages"].append(HumanMessage(content=prompt))
+    st.divider()
 
-                            # Run the graph
-                result = app.invoke(initial_state)
-                # Update state with results
-                initial_state["messages"] = result["messages"]
-                last_message = result["messages"][-1]
-                response = last_message.content
-            st.markdown(response)
+    st.markdown(
+        """
+        **Platform Stack**
+        - Groq (LLM Inference)
+        - LangGraph (Agent Flow)
+        - LangSmith (Tracing)
+        - ChromaDB (Vector Store)
+        - Streamlit (UI)
+        """,
+    )
 
-        st.session_state.messages.append({"role": "assistant", "content": response})
+# =================================================
+# ACTIVE CHAT
+# =================================================
+chat_id = data.get("active_chat")
 
-   # Sidebar for additional features
-    with st.sidebar:
-        st.markdown("### About This App")
-        st.markdown("Agentic AI chatbot:")
-        st.markdown("- **Groq** for fast LLM inference")
-        st.markdown("- **LangGraph** for AI orchestration")
-        st.markdown("- **LangSmith** for Monitoring & Evaluation")
-        st.markdown("- **Railway** for vector databse hosting")
-        st.markdown("- **ChromaDB** for vector database management")
-        st.markdown("- **Streamlit** for the beautiful UI")
+if chat_id and chat_id in data["chats"]:
+    chat = data["chats"][chat_id]
+    messages = chat["messages"]
+else:
+    chat = None
+    messages = []
 
-        st.markdown("---")
-        st.markdown("### Chat Controls")
+# =================================================
+# RENAME (CLEAN UX)
+# =================================================
+if chat:
+    with st.expander("✏ Rename conversation", expanded=False):
+        new_title = st.text_input(
+            "Conversation title",
+            chat["title"]
+        )
+        if new_title and new_title != chat["title"]:
+            chat["title"] = new_title[:32]
+            save_user_data(data)
+            st.success("Title updated")
 
-        if st.button("🗑️ Clear Chat History", use_container_width=True):
-            st.session_state.messages = []
-            st.rerun()
+# =================================================
+# CHAT DISPLAY
+# =================================================
+if chat:
+    for msg in messages:
+        with st.chat_message(msg["role"]):
+            st.markdown(msg["content"])
+else:
+    st.info("💡 Start by asking a question to begin a new conversation.")
 
-        st.markdown("---")
-        st.markdown("### Stats")
-        st.metric("Messages in Chat", len(st.session_state.messages))
+# =================================================
+# USER INPUT
+# =================================================
+if prompt := st.chat_input("Ask your question…"):
 
-        if st.session_state.messages:
-            user_messages = len([msg for msg in st.session_state.messages if msg["role"] == "user"])
-            st.metric("Questions Asked", user_messages)
+    # Lazy chat creation
+    if not chat:
+        chat_id = str(uuid.uuid4())[:8]
+        data["chats"][chat_id] = {
+            "title": prompt[:32],
+            "messages": [],
+            "pinned": False
+        }
+        data["active_chat"] = chat_id
+        chat = data["chats"][chat_id]
+        messages = chat["messages"]
+
+    messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    with st.chat_message("assistant"):
+        with st.spinner("Thinking..."):
+            initial_state["messages"].append(HumanMessage(content=prompt))
+            result = app.invoke(initial_state)
+            initial_state["messages"] = result["messages"]
+            response = result["messages"][-1].content
+        st.markdown(response)
+
+    messages.append({"role": "assistant", "content": response})
+    save_user_data(data)
+    st.rerun()
+
+#######new code end here
+
+
+
+
 
 # Enable below code for debugging
 # def main():
