@@ -19,3 +19,4 @@ langchain_classic
 openai
 anthropic
 langchain_anthropic
+langchain_openai
