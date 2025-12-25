@@ -1,8 +1,7 @@
 import os, json, uuid
-# import logging
 from langchain_groq import ChatGroq
 from paths import APP_CONFIG_FPATH, PROMPT_CONFIG_FPATH, OUTPUTS_DIR
-from ServerInteraction import get_db_collection, embed_documents
+# from ServerInteraction import get_db_collection, embed_documents
 import streamlit as st
 from typing import Dict, Any, Annotated
 from typing_extensions import TypedDict
@@ -23,7 +22,8 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
 config = load_yaml_config(APP_CONFIG_FPATH)
-llm = get_llm(config["llm_anthropic"])
+llm = get_llm(config["llm_openai"])
+
 
 class State(TypedDict):
     messages: Annotated[list, add_messages]
@@ -117,6 +117,71 @@ def create_graph():
 
     return graph.compile()
 
+
+# =================================================
+# CONTEXT ENGINEERING
+# =================================================
+
+prompt_config = load_yaml_config(PROMPT_CONFIG_FPATH)
+SYSTEM_RULES = prompt_config["rag_assistant_prompt"]["role"]
+style_or_tone = prompt_config["rag_assistant_prompt"]["style_or_tone"] 
+instructions = prompt_config["rag_assistant_prompt"]["instruction"]
+output_constraints = prompt_config["rag_assistant_prompt"]["output_constraints"]
+output_format = prompt_config["rag_assistant_prompt"]["output_format"]
+ 
+MAX_RECENT_TURNS = 6
+
+def summarize_conversation(messages):
+    """
+    Lightweight rolling summary.
+    In production, replace with LLM-based summarization every N turns.
+    """
+    if len(messages) < 6:
+        return ""
+
+    user_topics = [
+        m["content"] for m in messages
+        if m["role"] == "user"
+    ][-3:]
+
+    return (
+        "Recent discussion topics include: "
+        + "; ".join(user_topics)
+    )
+
+def build_context_messages(chat_messages, user_prompt):
+    """
+    Builds a clean, ordered context for the LLM
+    """
+
+    summary = summarize_conversation(chat_messages)
+
+    context = [
+        {"role": "system", "content": SYSTEM_RULES},
+        {"role": "system", "content": style_or_tone},
+        {"role": "system", "content": instructions},
+        {"role": "system", "content": output_constraints},
+        {"role": "system", "content": output_format},
+    ]
+
+    if summary:
+        context.append({
+            "role": "system",
+            "content": f"Conversation summary: {summary}"
+        })
+
+    # Only last N turns (short-term memory)
+    recent = chat_messages[-MAX_RECENT_TURNS:]
+    context.extend(recent)
+
+    # Final user message
+    context.append({
+        "role": "user",
+        "content": user_prompt
+    })
+
+    return context
+# =================================================
 
 
 if __name__ == "__main__":
@@ -305,9 +370,6 @@ if chat:
 else:
     st.info("💡 Start by asking a question to begin a new conversation.")
 
-# =================================================
-# USER INPUT
-# =================================================
 if prompt := st.chat_input("Ask your question…"):
 
     # Lazy chat creation
@@ -322,80 +384,40 @@ if prompt := st.chat_input("Ask your question…"):
         chat = data["chats"][chat_id]
         messages = chat["messages"]
 
+    # Save user message
     messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
+    # 👉 CONTEXT ENGINEERING HERE
+    context_messages = build_context_messages(
+        messages[:-1],  # exclude current prompt
+        prompt
+    )
+
     with st.chat_message("assistant"):
         with st.spinner("Thinking..."):
-            initial_state["messages"].append(HumanMessage(content=prompt))
+
+            # Reset LangGraph state cleanly
+            initial_state["messages"] = []
+
+            # Inject engineered context
+            for m in context_messages:
+                if m["role"] == "user":
+                    initial_state["messages"].append(
+                        HumanMessage(content=m["content"])
+                    )
+                else:
+                    initial_state["messages"].append(
+                        SystemMessage(content=m["content"])
+                    )
+
             result = app.invoke(initial_state)
-            initial_state["messages"] = result["messages"]
+            # print("Result contrext --> ", result)
             response = result["messages"][-1].content
+
         st.markdown(response)
 
     messages.append({"role": "assistant", "content": response})
     save_user_data(data)
     st.rerun()
-
-#######new code end here
-
-
-
-
-
-# Enable below code for debugging
-# def main():
-
-#     print("LangGraph Chatbot with Custom Tools")
-#     print("Type 'exit' or 'quit' to end the session.")
-
-#     # Create the graph
-#     app = create_graph()
-
-#     # Display available tools
-#     tool_registry = create_tool_registry()
-#     print(f"Available tools: {', '.join(tool_registry.keys())}\n")
-
-#     # System message with dynamic tool information
-#     tool_descriptions = "\n".join(
-#         [f"- {name}: {tool.description}" for name, tool in tool_registry.items()]
-#     )
-#     system_content = f"""You are a helpful AI assistant. Remember the previous messages in this conversation. 
-
-# You have access to the following tools:
-# {tool_descriptions}
-
-# Use these tools when appropriate to help answer questions. if you don not find any usefull information then just reply that you dont have any information regarding that."""
-
-#     # Initialize conversation state
-#     initial_state = {"messages": [SystemMessage(content=system_content)]}
-
-#     try:
-#         while True:
-#             user_input = input("You: ")
-#             if user_input.strip().lower() in {"exit", "quit"}:
-#                 print("👋 Goodbye!")
-#                 break
-
-#             # validate_input(user_input)
-#             # Add user message to state
-#             initial_state["messages"].append(HumanMessage(content=user_input))
-
-#             # Run the graph
-#             result = app.invoke(initial_state)
-
-#             # Update state with results
-#             initial_state["messages"] = result["messages"]
-
-#             # Display the final response
-#             last_message = result["messages"][-1]
-#             if hasattr(last_message, "content") and last_message.content:
-#                 print(f"Bot: {last_message.content}\n")
-
-#     except KeyboardInterrupt:
-#         print("\n👋 Session terminated.")
-
-
-# if __name__ == "__main__":
-#     main()

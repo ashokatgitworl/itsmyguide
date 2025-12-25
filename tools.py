@@ -3,7 +3,6 @@ import shutil
 import zipfile
 import requests
 from typing import List,Annotated,Literal,Union,Dict,Any
-# from paths import DATA_DIR
 from paths import CHROMA_URLL,CHROMA_PORTT
 from langchain_core.tools import tool
 import torch
@@ -27,33 +26,6 @@ from utils import load_yaml_config
 
 CHROMA_URL = CHROMA_URLL 
 CHROMA_PORT = CHROMA_PORTT 
-
-# MCP Imports
-# import asyncio
-# from mcp import ClientSession, StdioServerParameters
-# from mcp.client.stdio import stdio_client
-
-# MCP server config (same as your JSON)
-# async def call_git_mcp(tool_name: str, arguments: dict):
-#     server_params = StdioServerParameters(
-#         command="uvx",
-#         args=["mcp-server-git"]
-#     )
-
-#     async with stdio_client(server_params) as (read, write):
-#         async with ClientSession(read, write) as session:
-#             await session.initialize()
-
-#             result = await session.call_tool(
-#                 tool_name,
-#                 arguments
-#             )
-#             return result
-
-# @tool            
-# def git_tool(tool_name: str, arguments: dict):
-#     return asyncio.run(call_git_mcp(tool_name, arguments))
-
     
 
 class AgentState(TypedDict):
@@ -100,9 +72,12 @@ def initialize_db(collection_name: str = "publications") -> chromadb.Collection:
 
     return collection
 
-def get_db_collection(collection_name: str = "publications"):
+# def get_db_collection(collection_name: str = "publications"):
+def get_db_collection(collection_name: str ):
+
     client = get_client()
-    return client.get_collection(name=collection_name)
+    # return client.get_collection(name=collection_name)
+    return client.get_or_create_collection(name=collection_name)
 
 
 def chunk_publication(publication: str, chunk_size: int = 1000, chunk_overlap: int = 200):

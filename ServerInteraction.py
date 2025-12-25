@@ -27,13 +27,8 @@ def get_client():
     # Remove scheme from host for chroma client
     host = CHROMA_URL.replace("https://", "").replace("http://", "")
 
-    # client = chromadb.HttpClient(
-    #     host=host,
-    #     port=CHROMA_PORT,
-    #     ssl=False  # Railway free-tier uses HTTP, not HTTPS
-    # )
     client = chromadb.HttpClient(
-    host=CHROMA_URL, #"https://chromadb-cloud-production.up.railway.app",
+    host=CHROMA_URL, 
     port=CHROMA_PORT,
     ssl=True
 )
